@@ -1,13 +1,60 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, FlatList } from 'react-native'
+
+import { FoodList } from '../../components/foodslist'
+
+import { useIsFocused } from '@react-navigation/native';
+
+import { getFavorites } from '../../utils/storage';
 
 export function Favorites() {
+    const [receipes, setReceipes] = useState([]);
+    const isFocused = useIsFocused()
+
+
+    useEffect(() => {
+        let isActive = true;
+
+        async function getReceipes() {
+            const result = await getFavorites('@appreceitas')
+            if (isActive) {
+                setReceipes(result)
+            }
+        }
+        if (isActive) {
+            getReceipes();
+
+        }
+
+        return () => {
+            isActive = false
+        }
+
+    }, [isFocused])
 
     return (
-        <View style={styles.container}>
-            <Text>
-                Pagina de Favoritos !!
+        <SafeAreaView style={styles.container}>
+            <Text style={styles.title}>
+                Receitas Favoritas
             </Text>
-        </View>
+            {
+                receipes.length === 0 && (
+                    <Text>
+                        Você ainda não tem nenhuma receita salva.
+                    </Text>
+
+                )
+            }
+
+            <FlatList
+                showsVerticalScrollIndicator={false}
+                style={{ marginTop: 14 }}
+                data={receipes}
+                keyExtractor={(item) => String(item.id)}
+                renderItem={({ item }) => <FoodList data={item} />}
+            />
+
+        </SafeAreaView>
     )
 
 }
@@ -15,8 +62,14 @@ export function Favorites() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'yellow',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: '#F3F9FF',
+        paddingStart: 14,
+        paddingEnd: 14,
+        paddingTop: 36,
     },
+    title: {
+        color: '#000',
+        fontWeight: 'bold',
+        fontSize: 24,
+    }
 });
